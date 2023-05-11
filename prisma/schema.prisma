@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model user_message {
+  id         String    @id @default(uuid())
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+
+  is_deliverd      Boolean
+  is_open          Boolean
+  is_sent          Boolean
+  message          String  @db.VarChar(255)
+  receiver_user_id String
+  user_id          String
+  user             user    @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+}
+
+model photo {
+  id         String    @id @default(uuid())
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+
+  url       String @db.VarChar(255)
+  user_id   String
+  user      user   @relation(fields: [user_id], references: [id])
+  user_post post[]
+
+  @@index([user_id])
+}
+
+model post {
+  id         String    @id @default(uuid())
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+
+  contex     String  @db.VarChar(255)
+  photo_id   String?
+  user_id    String?
+  author     user?   @relation(fields: [user_id], references: [id])
+  user_photo photo?  @relation(fields: [photo_id], references: [id])
+
+  @@index([user_id])
+  @@index([photo_id])
+}
+
+model user {
+  id         String    @id @default(uuid())
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+
+  age           String         @db.VarChar(255)
+  bio           String?        @db.VarChar(255)
+  first_name    String         @db.VarChar(255)
+  is_active     Boolean?       @default(false)
+  is_admin      Boolean?       @default(false)
+  is_deleted    Boolean?       @default(false)
+  last_name     String         @db.VarChar(255)
+  password      String         @db.VarChar(255)
+  user_messages user_message[]
+  user_photos   photo[]
+  user_post     post[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model friend_list_member {
+  user_friend_list_id String
+  member_id           String
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model group_members {
+  group_id String
+  user_id  String
+
+  @@ignore
+}
+
+model user_friend_list {
+  id       String @id @default(uuid())
+  owner_id String
+  // owner    user    @relation(fields: [owner_id], references: [id])
+  // member_id String?
+  // friend_list_member user? @relation("memeber",fields: [member_id], references: [id]) 
+
+  @@ignore
+}
+
+model user_group_post {
+  id          String      @id @default(uuid())
+  contex      String      @db.VarChar(255)
+  created_at  DateTime?   @default(now())
+  updated_at  DateTime?   @updatedAt
+  group_id    String?
+  user_groups user_group? @relation(fields: [group_id], references: [id])
+
+  @@index([group_id])
+  @@ignore
+}
+
+model user_group {
+  id              String            @id @default(uuid())
+  group_name      String            @db.VarChar(255)
+  user_group_post user_group_post[]
+  created_at      DateTime?         @default(now())
+  updated_at      DateTime?         @updatedAt
+
+  @@ignore
+}
