@@ -9,12 +9,11 @@ export class AppService {
   }
 
   getUsers(): Promise<user[]> {
-    const users = prisma.user.findMany();
-    return users;
+    return prisma.user.findMany();
   }
 
   async createUser() {
-    const user = await prisma.user.create({
+    return await prisma.user.create({
       data: {
         age: '30',
         first_name: 'John',
@@ -23,7 +22,5 @@ export class AppService {
         bio: 'I am a bio',
       },
     });
-
-    return user;
   }
 }
